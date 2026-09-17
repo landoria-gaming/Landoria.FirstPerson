@@ -47,16 +47,18 @@ Current release: 1.0.x
 
 ## Snapshot builds
 
-The **Snapshot build** GitHub Actions workflow builds `main`, pull requests, and manual runs.
+The **Snapshot build** GitHub Actions workflow builds only `main` on push or manual runs.
+Pull requests check snapshot eligibility without accessing private references.
 The snapshot pipeline uses the reusable workflow in
-[LandoriaModActions](https://github.com/landoria-gaming/LandoriaModActions), version `v2`.
+[LandoriaModActions](https://github.com/landoria-gaming/LandoriaModActions), version `v3`.
 FirstPerson keeps its local MSBuild packaging target. All opted-in Landoria mods
 download the same Valheim/Unity and BepInEx/Harmony reference bundle from the private
 `landoria-gaming/LandoriaModReferences` repository, using organization secret
-`MOD_REFERENCES_TOKEN` (Actions read access to that private repository).
-Only that central repository checks Steam daily and replaces obsolete reference bundles.
-There is no mod-local dependency cache or update schedule. Fork PR builds are skipped
-because they cannot access the private-reference secret.
+`MOD_REFERENCES_TOKEN` (Actions write access restricted to that private repository).
+Before each eligible main build, it dispatches the central check and waits for
+that exact run. Steam and the latest active Thunderstore BepInExPack are checked
+on demand; unchanged references are reused. There is no daily schedule or
+mod-local reference cache. All PR dependency builds are skipped.
 It skips the build unless `AssemblyInformationalVersion` in `Properties/AssemblyInfo.cs`
 and `version_number` in `manifest.json` are identical and end with `-snapshot`.
 Download `Landoria.FirstPerson-snapshot-...` from the workflow run's artifacts for a
@@ -72,11 +74,12 @@ and [snapshot with metadata](https://github.com/landoria-gaming/Landoria.FirstPe
 
 Snapshots are development builds, not stable releases; the Thunderstore package manifest
 version preserve the source version (for example `1.0.11-snapshot`); no suffix is added automatically.
-Compilation downloads the latest successful shared reference bundle and validates
+Compilation downloads the bundle from its exact successful on-demand check and validates
 its SHA256 hashes. Snapshot builds never download the server or BepInExPack directly.
 Reference DLLs are used only for compilation, never included in the mod ZIP.
-The private central workflow republishes unchanged references daily to renew their
-30-day artifact retention, and deletes previous bundles only after a successful replacement.
+The private central workflow republishes reused references on demand to renew their
+30-day artifact retention. Expired references are downloaded again. It deletes
+previous bundles only after success, with a two-hour grace period for active downloads.
 Build metadata records the selected reference versions and central workflow run.
 
 To build the same Thunderstore ZIP locally (with `BepInExPath` and `ValheimGamePath` configured):
