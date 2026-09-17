@@ -50,7 +50,7 @@ Current release: 1.0.x
 The **Snapshot build** GitHub Actions workflow builds only `main` on push or manual runs.
 Pull requests check snapshot eligibility without accessing private references.
 The snapshot pipeline uses the reusable workflow in
-[LandoriaModActions](https://github.com/landoria-gaming/LandoriaModActions), version `v4.3`.
+[LandoriaModActions](https://github.com/landoria-gaming/LandoriaModActions), version `v4.5`.
 Workflow orchestration uses Bash; build, staging and ZIP creation use MSBuild.
 FirstPerson keeps its local MSBuild packaging target. All opted-in Landoria mods
 download the same Valheim/Unity and BepInEx/Harmony reference bundle from the private
@@ -60,8 +60,8 @@ Before each eligible main build, it dispatches the central check and waits for
 that exact run. Steam and the latest active Thunderstore BepInExPack are checked
 on demand; unchanged references are reused. There is no daily schedule or
 mod-local reference cache. All PR dependency builds are skipped.
-It skips the build unless `AssemblyInformationalVersion` in `Properties/AssemblyInfo.cs`
-and `version_number` in `manifest.json` are identical and end with `-snapshot`.
+All five versions must match. Only AssemblyInformationalVersion and version_number use -snapshot;
+AssemblyVersion (ignoring .*) must match AssemblyFileVersion and PluginVersion without that suffix.
 Download `Landoria.FirstPerson-snapshot-...` from the workflow run's artifacts for a
 Release build with the package files and build metadata (retained for 30 days).
 The separate `Landoria.FirstPerson-thunderstore-...` artifact contains
@@ -70,7 +70,7 @@ the DLL, icon, manifest, README, and optional changelog at the ZIP root.
 Successful builds on `main` also replace the single [Snapshot prerelease](https://github.com/landoria-gaming/Landoria.FirstPerson/releases/tag/snapshot).
 Pull requests and manual runs on other branches never publish a release.
 The `snapshot` tag follows the compiled commit; older commits cannot replace the latest main snapshot.
-Download both versioned ZIPs from the [Snapshot release](https://github.com/landoria-gaming/Landoria.FirstPerson/releases/tag/snapshot).
+The [Snapshot release](https://github.com/landoria-gaming/Landoria.FirstPerson/releases/tag/snapshot) contains only the versioned Thunderstore ZIP.
 
 Snapshots are development builds, not stable releases; the Thunderstore package manifest
 version preserve the source version (for example `1.0.11-snapshot`); no suffix is added automatically.
