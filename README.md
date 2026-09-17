@@ -45,6 +45,27 @@ The file `Landoria.FirstPerson.cfg` is created automatically in the config folde
 
 Current release: 1.0.x
 
+## Snapshot builds
+
+The **Snapshot build** GitHub Actions workflow builds `main`, pull requests, and manual runs.
+Download `Landoria.FirstPerson-snapshot-...` from the workflow run's artifacts for a
+Release build with the package files and build metadata (retained for 30 days).
+The separate `Landoria.FirstPerson-thunderstore-...` artifact contains
+`Landoria-FirstPerson-<version>.zip`, packaged like LandoriaModsAutomation with
+the DLL, icon, manifest, README, and optional changelog at the ZIP root.
+Snapshots are development builds, not published releases; the ZIP name and its manifest
+version use the `-snapshot` suffix (for example `1.0.10-snapshot`), without changing source files.
+Compilation uses the latest public Valheim dedicated server references and BepInEx 5.4.2350.
+
+To build the same Thunderstore ZIP locally (with `BepInExPath` and `ValheimGamePath` configured):
+
+```powershell
+dotnet build Landoria.FirstPerson.csproj -c Release -t:PackageThunderstore
+```
+
+The ZIP is written to `bin/thunderstore`; override it with `-p:ThunderstoreOutputPath=<directory>`.
+Add `-p:SnapshotBuild=true` to create a snapshot package instead of a regular package.
+
 ## Contact
 
 Report bugs through [GitHub Issues](https://github.com/landoria-gaming/Landoria.FirstPerson/issues).

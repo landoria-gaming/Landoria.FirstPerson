@@ -1,0 +1,135 @@
+name: Snapshot build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snapshot-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: .NET Framework 4.8 / AnyCPU
+    runs-on: windows-2022
+    timeout-minutes: 45
+    env:
+      BEPINEX_VERSION: '5.4.2350'
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: '10.0.x'
+
+      # Use the publicly downloadable dedicated server as compilation references.
+      # Neither the server nor BepInEx is executed or included in the snapshot.
+      - name: Download compilation dependencies
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dependencies = Join-Path $env:RUNNER_TEMP 'snapshot-dependencies'
+          $steamcmd = Join-Path $dependencies 'steamcmd'
+          $server = Join-Path $dependencies 'valheim-server'
+          $references = Join-Path $dependencies 'valheim-references'
+          $managed = Join-Path $references 'valheim_Data/Managed'
+          New-Item -ItemType Directory -Path $steamcmd, $managed -Force | Out-Null
+          Invoke-WebRequest 'https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip' -OutFile "$dependencies/steamcmd.zip"
+          Expand-Archive -LiteralPath "$dependencies/steamcmd.zip" -DestinationPath $steamcmd
+          & "$steamcmd/steamcmd.exe" +force_install_dir $server +login anonymous +app_update 896660 validate +quit
+          if ($LASTEXITCODE -ne 0) {
+            throw "SteamCMD failed with exit code $LASTEXITCODE."
+          }
+          Copy-Item -Path "$server/valheim_server_Data/Managed/*.dll" -Destination $managed
+          Invoke-WebRequest "https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/$env:BEPINEX_VERSION/" -OutFile "$dependencies/bepinex.zip"
+          Expand-Archive -LiteralPath "$dependencies/bepinex.zip" -DestinationPath "$dependencies/bepinex"
+          $bepinex = Join-Path $dependencies 'bepinex/BepInExPack_Valheim/BepInEx'
+          $required = @(
+            "$bepinex/core/BepInEx.dll", "$bepinex/core/0Harmony.dll",
+            "$managed/assembly_valheim.dll", "$managed/assembly_utils.dll",
+            "$managed/netstandard.dll", "$managed/UnityEngine.dll",
+            "$managed/UnityEngine.AnimationModule.dll", "$managed/UnityEngine.CoreModule.dll"
+          )
+          foreach ($file in $required) {
+            if (-not (Test-Path -LiteralPath $file -PathType Leaf)) {
+              throw "Missing compilation dependency: $file"
+            }
+          }
+          "BepInExPath=$bepinex" >> $env:GITHUB_ENV
+          "ValheimGamePath=$references" >> $env:GITHUB_ENV
+          Copy-Item -LiteralPath "$server/steamapps/appmanifest_896660.acf" -Destination "$dependencies/valheim-appmanifest.acf"
+
+      - name: Build and validate Harmony targets
+        run: |
+          New-Item -ItemType Directory -Path obj -Force | Out-Null
+          dotnet build Landoria.FirstPerson.csproj -c Release --nologo -p:Platform=AnyCPU -v minimal /fl '/flp:logfile=obj/snapshot-build.log;verbosity=normal'
+          if ($LASTEXITCODE -ne 0) {
+            throw "Build failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Package snapshot
+        run: |
+          $snapshot = 'bin/snapshot'
+          New-Item -ItemType Directory -Path $snapshot -Force | Out-Null
+          Copy-Item -LiteralPath 'bin/Release/Landoria.FirstPerson.dll', 'manifest.json', 'icon.png', 'README.md', 'CHANGELOG.md', 'LICENSE' -Destination $snapshot
+          $dll = Get-Item -LiteralPath "$snapshot/Landoria.FirstPerson.dll"
+          if ($dll.Length -eq 0) {
+            throw 'The compiled DLL is empty.'
+          }
+          Copy-Item -LiteralPath "$env:RUNNER_TEMP/snapshot-dependencies/valheim-appmanifest.acf" -Destination "$snapshot/valheim-appmanifest.acf"
+          [ordered]@{
+            kind = 'snapshot'
+            commit = (git rev-parse HEAD)
+            run = $env:GITHUB_RUN_ID
+            attempt = $env:GITHUB_RUN_ATTEMPT
+            builtUtc = [DateTime]::UtcNow.ToString('O')
+            framework = '.NET Framework 4.8'
+            platform = 'AnyCPU'
+            configuration = 'Release'
+            bepinexVersion = $env:BEPINEX_VERSION
+            dllSha256 = (Get-FileHash -LiteralPath $dll.FullName -Algorithm SHA256).Hash
+          } | ConvertTo-Json | Set-Content -LiteralPath "$snapshot/build-info.json" -Encoding utf8
+
+      - name: Package Thunderstore archive
+        run: |
+          dotnet build Landoria.FirstPerson.csproj -c Release --no-restore --nologo -t:PackageThunderstore -p:Platform=AnyCPU -p:SnapshotBuild=true
+          if ($LASTEXITCODE -ne 0) {
+            throw "Thunderstore packaging failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Upload Thunderstore archive
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: Landoria.FirstPerson-thunderstore-${{ github.sha }}-${{ github.run_attempt }}
+          path: bin/thunderstore/*.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload snapshot
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: Landoria.FirstPerson-snapshot-${{ github.sha }}-${{ github.run_attempt }}
+          path: bin/snapshot/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: Landoria.FirstPerson-build-log-${{ github.run_id }}-${{ github.run_attempt }}
+          path: obj/snapshot-build.log
+          if-no-files-found: ignore
+          retention-days: 30

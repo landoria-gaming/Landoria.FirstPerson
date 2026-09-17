@@ -1,0 +1,32 @@
+<Project>
+  <PropertyGroup>
+    <SnapshotBuild Condition="'$(SnapshotBuild)' == ''">false</SnapshotBuild>
+    <ThunderstoreOutputPath Condition="'$(ThunderstoreOutputPath)' == ''">$(MSBuildProjectDirectory)\bin\thunderstore</ThunderstoreOutputPath>
+  </PropertyGroup>
+
+  <Target Name="PackageThunderstore" DependsOnTargets="Build">
+    <PropertyGroup>
+      <_ThunderstoreManifest>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\manifest.json'))</_ThunderstoreManifest>
+      <_ThunderstoreName>$([System.Text.RegularExpressions.Regex]::Match('$(_ThunderstoreManifest)', '&quot;name&quot;\s*:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</_ThunderstoreName>
+      <_ThunderstoreVersion>$([System.Text.RegularExpressions.Regex]::Match('$(_ThunderstoreManifest)', '&quot;version_number&quot;\s*:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</_ThunderstoreVersion>
+      <_ThunderstoreValidVersion>$([System.Text.RegularExpressions.Regex]::IsMatch('$(_ThunderstoreVersion)', '^\d+\.\d+\.\d+(-draft)?$'))</_ThunderstoreValidVersion>
+      <_ThunderstoreVersion Condition="'$(SnapshotBuild)' == 'true'">$([System.Text.RegularExpressions.Regex]::Match('$(_ThunderstoreVersion)', '^\d+\.\d+\.\d+').Value)-snapshot</_ThunderstoreVersion>
+      <_ThunderstoreManifest Condition="'$(SnapshotBuild)' == 'true'">$([System.Text.RegularExpressions.Regex]::Replace('$(_ThunderstoreManifest)', '(&quot;version_number&quot;\s*:\s*&quot;)[^&quot;]+(&quot;)', '${1}$(_ThunderstoreVersion)${2}'))</_ThunderstoreManifest>
+      <_ThunderstoreStaging>$(MSBuildProjectDirectory)\$(IntermediateOutputPath)thunderstore-$([System.Guid]::NewGuid().ToString('N'))</_ThunderstoreStaging>
+      <ThunderstoreArchive>$(ThunderstoreOutputPath)\Landoria-FirstPerson-$(_ThunderstoreVersion).zip</ThunderstoreArchive>
+    </PropertyGroup>
+    <Error Condition="'$(_ThunderstoreName)' != 'FirstPerson' Or '$(_ThunderstoreValidVersion)' != 'True'"
+           Text="Invalid FirstPerson package metadata in manifest.json." />
+    <ItemGroup>
+      <!-- Match LandoriaModsAutomation's create_archive: package files at ZIP root. -->
+      <_ThunderstoreFiles Include="$(TargetPath);$(MSBuildProjectDirectory)\icon.png;$(MSBuildProjectDirectory)\manifest.json;$(MSBuildProjectDirectory)\README.md" />
+      <_ThunderstoreFiles Include="$(MSBuildProjectDirectory)\CHANGELOG.md" Condition="Exists('$(MSBuildProjectDirectory)\CHANGELOG.md')" />
+    </ItemGroup>
+    <MakeDir Directories="$(_ThunderstoreStaging);$(ThunderstoreOutputPath)" />
+    <Copy SourceFiles="@(_ThunderstoreFiles)" DestinationFolder="$(_ThunderstoreStaging)" />
+    <WriteLinesToFile Condition="'$(SnapshotBuild)' == 'true'" File="$(_ThunderstoreStaging)\manifest.json" Lines="$(_ThunderstoreManifest)" Overwrite="true" Encoding="UTF-8" />
+    <ZipDirectory SourceDirectory="$(_ThunderstoreStaging)" DestinationFile="$(ThunderstoreArchive)" Overwrite="true" />
+    <RemoveDir Directories="$(_ThunderstoreStaging)" />
+    <Message Text="Thunderstore package: $(ThunderstoreArchive)" Importance="high" />
+  </Target>
+</Project>
