@@ -55,7 +55,13 @@ Release build with the package files and build metadata (retained for 30 days).
 The separate `Landoria.FirstPerson-thunderstore-...` artifact contains
 `Landoria-FirstPerson-<version>.zip`, packaged like LandoriaModsAutomation with
 the DLL, icon, manifest, README, and optional changelog at the ZIP root.
-Snapshots are development builds, not published releases; the ZIP name and its manifest
+Successful builds on `main` also replace the single [Snapshot prerelease](https://github.com/landoria-gaming/Landoria.FirstPerson/releases/tag/snapshot).
+Pull requests and manual runs on other branches never publish a release.
+The `snapshot` tag follows the compiled commit; older commits cannot replace the latest main snapshot.
+Stable downloads: [Thunderstore ZIP](https://github.com/landoria-gaming/Landoria.FirstPerson/releases/download/snapshot/Landoria-FirstPerson-snapshot.zip)
+and [snapshot with metadata](https://github.com/landoria-gaming/Landoria.FirstPerson/releases/download/snapshot/Landoria.FirstPerson-snapshot.zip).
+
+Snapshots are development builds, not stable releases; the Thunderstore package manifest
 version preserve the source version (for example `1.0.11-snapshot`); no suffix is added automatically.
 Compilation uses the latest public Valheim dedicated server references and BepInEx 5.4.2350.
 
