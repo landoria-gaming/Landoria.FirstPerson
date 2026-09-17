@@ -41,4 +41,7 @@
     <RemoveDir Directories="$(_ThunderstoreStaging)" />
     <Message Text="Thunderstore package: $(ThunderstoreArchive)" Importance="high" />
   </Target>
+  <Target Name="StageSnapshotExtras">
+    <Copy SourceFiles="@(_SnapshotExtraFiles)" DestinationFolder="$(MSBuildProjectDirectory)\bin\snapshot" Condition="'@(_SnapshotExtraFiles)' != ''" />
+  </Target>
 </Project>
