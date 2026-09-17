@@ -17,7 +17,7 @@ jobs:
   snapshot:
     permissions:
       contents: write
-    uses: landoria-gaming/LandoriaModActions/.github/workflows/snapshot.yml@v3
+    uses: landoria-gaming/LandoriaModActions/.github/workflows/snapshot.yml@v4
     with:
       project-file: Landoria.FirstPerson.csproj
       mod-name: Landoria.FirstPerson

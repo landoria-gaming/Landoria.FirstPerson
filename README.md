@@ -50,7 +50,8 @@ Current release: 1.0.x
 The **Snapshot build** GitHub Actions workflow builds only `main` on push or manual runs.
 Pull requests check snapshot eligibility without accessing private references.
 The snapshot pipeline uses the reusable workflow in
-[LandoriaModActions](https://github.com/landoria-gaming/LandoriaModActions), version `v3`.
+[LandoriaModActions](https://github.com/landoria-gaming/LandoriaModActions), version `v4`.
+Workflow orchestration uses Bash; build, staging and ZIP creation use MSBuild.
 FirstPerson keeps its local MSBuild packaging target. All opted-in Landoria mods
 download the same Valheim/Unity and BepInEx/Harmony reference bundle from the private
 `landoria-gaming/LandoriaModReferences` repository, using organization secret
