@@ -33,10 +33,10 @@ jobs:
           try {
             $manifest = Get-Content -LiteralPath 'manifest.json' -Raw | ConvertFrom-Json
             $assemblyInfo = Get-Content -LiteralPath 'Properties/AssemblyInfo.cs' -Raw
-            $matches = [regex]::Matches($assemblyInfo, '(?m)^\s*\[assembly:\s*AssemblyInformationalVersion\("([^"]+)"\)\]')
-            $eligible = $matches.Count -eq 1 -and
+            $assemblyVersionMatches = [regex]::Matches($assemblyInfo, '(?m)^\s*\[assembly:\s*AssemblyInformationalVersion\("([^"]+)"\)\]')
+            $eligible = $assemblyVersionMatches.Count -eq 1 -and
               $manifest.version_number -cmatch '^\d+\.\d+\.\d+-snapshot$' -and
-              $manifest.version_number -ceq $matches[0].Groups[1].Value
+              $manifest.version_number -ceq $assemblyVersionMatches[0].Groups[1].Value
           } catch {
             Write-Host "Snapshot metadata could not be read: $_"
           }
