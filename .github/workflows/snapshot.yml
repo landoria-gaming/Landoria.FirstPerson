@@ -14,7 +14,40 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  eligibility:
+    name: Check snapshot versions
+    runs-on: windows-2022
+    outputs:
+      eligible: ${{ steps.check.outputs.eligible }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Compare snapshot versions
+        id: check
+        shell: pwsh
+        run: |
+          $eligible = $false
+          try {
+            $manifest = Get-Content -LiteralPath 'manifest.json' -Raw | ConvertFrom-Json
+            $assemblyInfo = Get-Content -LiteralPath 'Properties/AssemblyInfo.cs' -Raw
+            $matches = [regex]::Matches($assemblyInfo, '(?m)^\s*\[assembly:\s*AssemblyInformationalVersion\("([^"]+)"\)\]')
+            $eligible = $matches.Count -eq 1 -and
+              $manifest.version_number -cmatch '^\d+\.\d+\.\d+-snapshot$' -and
+              $manifest.version_number -ceq $matches[0].Groups[1].Value
+          } catch {
+            Write-Host "Snapshot metadata could not be read: $_"
+          }
+          "eligible=$($eligible.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          if (-not $eligible) {
+            'Snapshot skipped: AssemblyInformationalVersion and version_number must be identical and end with -snapshot.' >> $env:GITHUB_STEP_SUMMARY
+          }
+
   build:
+    needs: eligibility
+    if: needs.eligibility.outputs.eligible == 'true'
     name: .NET Framework 4.8 / AnyCPU
     runs-on: windows-2022
     timeout-minutes: 45
