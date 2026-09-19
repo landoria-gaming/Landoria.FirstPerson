@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.12
+
+- Added a configurable first-person FOV bonus (+10 by default)
+- Smooth transitions are disabled by default.
+- Config changes are applied without restarting the game.
+
 ## 1.0.11
 
 - Updated README.
