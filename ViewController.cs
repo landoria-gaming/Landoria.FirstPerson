@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Landoria.FirstPerson
 {
     // Controls the local player's view while first person is active.
-    internal static class FirstPersonViewController
+    internal static class ViewController
     {
         private const float BackwardOffset = 0.4f; // Meters.
         // Aligns the player with the camera while keeping Valheim's camera position.

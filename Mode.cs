@@ -1,7 +1,7 @@
 namespace Landoria.FirstPerson
 {
     // Stores and applies the current first-person camera state.
-    internal static class FirstPersonMode
+    internal static class Mode
     {
         private const float NearClipPlane = 0.09f; // Meters.
         private const float DistanceThreshold = 0.001f; // Meters.
@@ -37,7 +37,7 @@ namespace Landoria.FirstPerson
             if (!enabled)
             {
                 SetActive(false);
-                FirstPersonShortcut.CancelTransition();
+                Shortcut.CancelTransition();
             }
             Apply(GameCamera.instance);
             ApplyConfiguredFieldOfView(GameCamera.instance);
@@ -54,11 +54,11 @@ namespace Landoria.FirstPerson
             Active = active;
             if (active)
             {
-                FirstPersonVegetationController.Apply();
+                VegetationController.Apply();
             }
             else
             {
-                FirstPersonVegetationController.Restore();
+                VegetationController.Restore();
             }
         }
 
@@ -92,7 +92,13 @@ namespace Landoria.FirstPerson
         // Applies the saved field of view to every camera mode.
         internal static void ApplyConfiguredFieldOfView(GameCamera camera)
         {
-            SetFieldOfView(camera, FirstPersonPreference.FieldOfView);
+            float fieldOfView = Preference.FieldOfView;
+            if (Active)
+            {
+                fieldOfView += Preference.FirstPersonFieldOfViewBonus;
+            }
+
+            SetFieldOfView(camera, fieldOfView);
         }
 
         // Reduces nearby geometry clipping while first person is active.
@@ -108,10 +114,10 @@ namespace Landoria.FirstPerson
         internal static void ResetSession()
         {
             SetEnabled(false);
-            FirstPersonHeadBobController.Reset();
-            FirstPersonHelmetLightController.Restore();
-            FirstPersonVisibilityController.Restore();
-            FirstPersonShortcut.Reset();
+            HeadBobController.Reset();
+            HelmetLightController.Restore();
+            VisibilityController.Restore();
+            Shortcut.Reset();
         }
 
         // Restores all camera and visual state when the plugin stops.

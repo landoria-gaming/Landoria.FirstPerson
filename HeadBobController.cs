@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Landoria.FirstPerson
 {
     // Moves the camera through alternating halves of a continuous figure eight.
-    internal static class FirstPersonHeadBobController
+    internal static class HeadBobController
     {
         private const float WalkVerticalAmplitude = 4.0f; // Millimeters.
         private const float WalkStepInterval = 0.7f; // Seconds per step.
@@ -23,7 +23,7 @@ namespace Landoria.FirstPerson
         // Applies a continuous cycle after Valheim has positioned the camera.
         internal static void Apply(GameCamera camera, Player player)
         {
-            if (FirstPersonPreference.HeadBobStrength <= 0 || !FirstPersonMode.Active ||
+            if (Preference.HeadBobStrength <= 0 || !Mode.Active ||
                 !camera || !player)
             {
                 return;
@@ -47,10 +47,10 @@ namespace Landoria.FirstPerson
                 : player.IsWalking()
                     ? WalkVerticalAmplitude
                     : JogVerticalAmplitude) *
-                MetersPerMillimeter * FirstPersonPreference.HeadBobStrength;
+                MetersPerMillimeter * Preference.HeadBobStrength;
             float horizontalAmplitude = HorizontalAmplitude *
                                         MetersPerMillimeter *
-                                        FirstPersonPreference.HeadBobStrength;
+                                        Preference.HeadBobStrength;
             float horizontal = Mathf.Sin(phase) * horizontalAmplitude * blend;
             float vertical = Mathf.Sin(phase * 2f) * verticalAmplitude * blend;
             ApplyMovement(camera.transform, horizontal, vertical);

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Landoria.FirstPerson
 {
     // Keeps vegetation materials visible when they are very close to the camera.
-    internal static class FirstPersonVegetationController
+    internal static class VegetationController
     {
         private const string CameraCullProperty = "_CamCull";
 
@@ -21,7 +21,7 @@ namespace Landoria.FirstPerson
 
         internal static void Apply(GameObject root)
         {
-            if (!FirstPersonMode.Active || !root)
+            if (!Mode.Active || !root)
             {
                 return;
             }

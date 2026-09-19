@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Landoria.FirstPerson
 {
     // Keeps helmet lights stable and restores their original settings afterward.
-    internal static class FirstPersonHelmetLightController
+    internal static class HelmetLightController
     {
         private struct LightState
         {
@@ -27,7 +27,7 @@ namespace Landoria.FirstPerson
         // Places tracked helmet lights on the first-person camera.
         internal static void Apply(GameCamera camera, Player player)
         {
-            if (!FirstPersonMode.Active || !camera || !player)
+            if (!Mode.Active || !camera || !player)
             {
                 Restore();
                 return;

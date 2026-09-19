@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Landoria.FirstPerson
 {
     // Toggles first person while preserving the previous camera distance.
-    internal static class FirstPersonShortcut
+    internal static class Shortcut
     {
         private const float TransitionDuration = 0.2f;
 
@@ -35,13 +35,13 @@ namespace Landoria.FirstPerson
                 return;
             }
 
-            UpdateActionReturn(camera, ref cameraDistance);
+            UpdateActionReturn(ref cameraDistance);
         }
 
         private static void RememberDistance(float cameraDistance)
         {
             if (!transitioning &&
-                !FirstPersonMode.IsFirstPersonDistance(cameraDistance))
+                !Mode.IsFirstPersonDistance(cameraDistance))
             {
                 previousDistance = cameraDistance;
                 hasPreviousDistance = true;
@@ -52,9 +52,9 @@ namespace Landoria.FirstPerson
         {
             temporarilyThirdPerson = false;
             firstPersonReturnTime = 0f;
-            bool enabled = !FirstPersonMode.Enabled;
-            FirstPersonMode.SetEnabled(enabled);
-            FirstPersonPreference.SetEnabled(enabled);
+            bool enabled = !Mode.Enabled;
+            Mode.SetEnabled(enabled);
+            Preference.SetEnabled(enabled);
             float targetDistance = enabled
                 ? 0f
                 : hasPreviousDistance ? previousDistance : camera.m_maxDistance;
@@ -62,20 +62,20 @@ namespace Landoria.FirstPerson
             ShowState(enabled);
         }
 
-        private static void UpdateActionReturn(GameCamera camera, ref float cameraDistance)
+        private static void UpdateActionReturn(ref float cameraDistance)
         {
             float returnDelay = Mathf.Max(
-                0f, FirstPersonPreference.CombatReturnDelay);
+                0f, Preference.AutomaticReturnDelay);
             bool actionActive = returnDelay > 0f && IsCombatActionActive();
-            bool isFirstPerson = FirstPersonMode.Enabled &&
-                                 (FirstPersonMode.IsFirstPersonDistance(cameraDistance) ||
+            bool isFirstPerson = Mode.Enabled &&
+                                 (Mode.IsFirstPersonDistance(cameraDistance) ||
                                   IsTransitioningToFirstPerson());
             if (actionActive && (temporarilyThirdPerson || isFirstPerson))
             {
                 if (!temporarilyThirdPerson)
                 {
-                    StartTransition(ref cameraDistance,
-                        hasPreviousDistance ? previousDistance : camera.m_maxDistance);
+                    SetAutomaticDistance(ref cameraDistance,
+                        Mode.GetMinimumThirdPersonDistance());
                 }
                 temporarilyThirdPerson = true;
                 firstPersonReturnTime = Mathf.Max(
@@ -84,14 +84,14 @@ namespace Landoria.FirstPerson
             }
             else if (temporarilyThirdPerson && Time.unscaledTime >= firstPersonReturnTime)
             {
-                StartTransition(ref cameraDistance, 0f);
+                SetAutomaticDistance(ref cameraDistance, 0f);
                 temporarilyThirdPerson = false;
             }
-            else if (!temporarilyThirdPerson && FirstPersonMode.Enabled &&
+            else if (!temporarilyThirdPerson && Mode.Enabled &&
                      !transitioning &&
-                     !FirstPersonMode.IsFirstPersonDistance(cameraDistance))
+                     !Mode.IsFirstPersonDistance(cameraDistance))
             {
-                StartTransition(ref cameraDistance, 0f);
+                SetAutomaticDistance(ref cameraDistance, 0f);
             }
         }
 
@@ -104,14 +104,14 @@ namespace Landoria.FirstPerson
         internal static void ObserveCameraDistance(
             GameCamera camera, ref float cameraDistance)
         {
-            bool changed = awaitingDistanceObservation && FirstPersonMode.Enabled &&
+            bool changed = awaitingDistanceObservation && Mode.Enabled &&
                            Mathf.Abs(cameraDistance - expectedCameraDistance) >
                            Mathf.Epsilon;
             awaitingDistanceObservation = false;
             if (!changed) return;
 
             float returnDelay = Mathf.Max(
-                0f, FirstPersonPreference.ZoomReturnDelay);
+                0f, Preference.AutomaticReturnDelay);
             if (returnDelay <= 0f && !temporarilyThirdPerson)
             {
                 cameraDistance = expectedCameraDistance;
@@ -123,7 +123,7 @@ namespace Landoria.FirstPerson
                 : camera.m_maxDistance;
             cameraDistance = Mathf.Clamp(
                 cameraDistance,
-                FirstPersonMode.GetMinimumThirdPersonDistance(),
+                Mode.GetMinimumThirdPersonDistance(),
                 maximumDistance);
             previousDistance = cameraDistance;
             hasPreviousDistance = true;
@@ -140,9 +140,9 @@ namespace Landoria.FirstPerson
         internal static void KeepTemporaryThirdPerson(ref float cameraDistance)
         {
             if ((temporarilyThirdPerson || IsTransitioningToFirstPerson()) &&
-                FirstPersonMode.IsFirstPersonDistance(cameraDistance))
+                Mode.IsFirstPersonDistance(cameraDistance))
             {
-                cameraDistance = FirstPersonMode.GetMinimumThirdPersonDistance();
+                cameraDistance = Mode.GetMinimumThirdPersonDistance();
             }
         }
 
@@ -152,14 +152,31 @@ namespace Landoria.FirstPerson
             return player && (player.InAttack() || player.IsBlocking());
         }
 
+        // Applies the configured transition style to an automatic camera move.
+        private static void SetAutomaticDistance(
+            ref float cameraDistance, float targetDistance)
+        {
+            if (Preference.SmoothAutomaticTransitions)
+            {
+                StartTransition(ref cameraDistance, targetDistance);
+                return;
+            }
+
+            transitioning = false;
+            cameraDistance = targetDistance;
+            transitionOffsetWeight = Mode.IsFirstPersonDistance(targetDistance)
+                ? 1f
+                : 0f;
+        }
+
         private static void StartTransition(ref float cameraDistance, float targetDistance)
         {
             transitionStartDistance = cameraDistance;
             transitionTargetDistance = targetDistance;
             transitionStartOffsetWeight = transitioning
                 ? transitionOffsetWeight
-                : FirstPersonMode.IsFirstPersonDistance(cameraDistance) ? 1f : 0f;
-            transitionTargetOffsetWeight = FirstPersonMode.IsFirstPersonDistance(targetDistance)
+                : Mode.IsFirstPersonDistance(cameraDistance) ? 1f : 0f;
+            transitionTargetOffsetWeight = Mode.IsFirstPersonDistance(targetDistance)
                 ? 1f
                 : 0f;
             transitionElapsed = 0f;
@@ -196,7 +213,7 @@ namespace Landoria.FirstPerson
         private static bool IsTransitioningToFirstPerson()
         {
             return transitioning &&
-                   FirstPersonMode.IsFirstPersonDistance(transitionTargetDistance);
+                   Mode.IsFirstPersonDistance(transitionTargetDistance);
         }
 
         internal static void CancelTransition()
@@ -236,7 +253,7 @@ namespace Landoria.FirstPerson
 
         private static bool IsToggleShortcutDown()
         {
-            KeyboardShortcut shortcut = FirstPersonPreference.ToggleShortcut;
+            KeyboardShortcut shortcut = Preference.ToggleShortcut;
             if (shortcut.MainKey == KeyCode.None ||
                 !ZInput.GetKeyDown(shortcut.MainKey))
             {

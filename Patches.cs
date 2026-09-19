@@ -5,79 +5,79 @@ namespace Landoria.FirstPerson
 {
     // Saves and applies camera distance settings when the camera starts.
     [HarmonyPatch(typeof(GameCamera), "Awake")]
-    internal static class FirstPersonCameraAwakePatch
+    internal static class CameraAwakePatch
     {
         private static void Prefix(GameCamera __instance)
         {
-            FirstPersonMode.CaptureVanillaDistance(__instance);
+            Mode.CaptureVanillaDistance(__instance);
         }
 
         private static void Postfix(GameCamera __instance)
         {
-            FirstPersonMode.Apply(__instance);
+            Mode.Apply(__instance);
         }
     }
 
     // Updates first-person state after Valheim positions the camera.
     [HarmonyPatch(typeof(GameCamera), "UpdateCamera")]
-    internal static class FirstPersonCameraUpdatePatch
+    internal static class CameraUpdatePatch
     {
         private static void Prefix(
             GameCamera __instance, float dt, ref float ___m_distance)
         {
-            FirstPersonShortcut.Update(__instance, dt, ref ___m_distance);
-            FirstPersonShortcut.PrepareDistanceObservation(___m_distance);
+            Shortcut.Update(__instance, dt, ref ___m_distance);
+            Shortcut.PrepareDistanceObservation(___m_distance);
         }
 
         private static void Postfix(
             GameCamera __instance, Camera ___m_camera, float ___m_distance)
         {
             Player player = Player.m_localPlayer;
-            bool shouldApply = FirstPersonMode.ShouldActivate(
+            bool shouldApply = Mode.ShouldActivate(
                 player, GameCamera.InFreeFly(), ___m_distance);
-            FirstPersonMode.SetActive(shouldApply);
-            FirstPersonMode.ApplyConfiguredFieldOfView(__instance);
-            FirstPersonMode.ApplyNearClipPlane(___m_camera);
-            FirstPersonVisibilityController.SetHidden(player, shouldApply);
-            float offsetWeight = FirstPersonShortcut.GetOffsetWeight(shouldApply);
+            Mode.SetActive(shouldApply);
+            Mode.ApplyConfiguredFieldOfView(__instance);
+            Mode.ApplyNearClipPlane(___m_camera);
+            VisibilityController.SetHidden(player, shouldApply);
+            float offsetWeight = Shortcut.GetOffsetWeight(shouldApply);
             if (offsetWeight > 0f)
             {
-                FirstPersonViewController.Apply(
+                ViewController.Apply(
                     __instance, player, offsetWeight, shouldApply);
             }
             if (shouldApply)
             {
-                FirstPersonHeadBobController.Apply(__instance, player);
-                FirstPersonHelmetLightController.Apply(__instance, player);
+                HeadBobController.Apply(__instance, player);
+                HelmetLightController.Apply(__instance, player);
             }
             else
             {
-                FirstPersonHeadBobController.Reset();
-                FirstPersonHelmetLightController.Restore();
+                HeadBobController.Reset();
+                HelmetLightController.Restore();
             }
         }
     }
 
     // Handles native zoom before Valheim calculates the final camera position.
     [HarmonyPatch(typeof(GameCamera), "GetCameraPosition")]
-    internal static class FirstPersonTemporaryDistancePatch
+    internal static class TemporaryDistancePatch
     {
         private static void Prefix(GameCamera __instance, ref float ___m_distance)
         {
-            FirstPersonShortcut.ObserveCameraDistance(
+            Shortcut.ObserveCameraDistance(
                 __instance, ref ___m_distance);
-            FirstPersonShortcut.KeepTemporaryThirdPerson(ref ___m_distance);
+            Shortcut.KeepTemporaryThirdPerson(ref ___m_distance);
         }
     }
 
     // Blends Valheim's third-person camera offset into its first-person offset.
     [HarmonyPatch(typeof(GameCamera), "GetCameraOffset")]
-    internal static class FirstPersonCameraOffsetPatch
+    internal static class CameraOffsetPatch
     {
         private static void Postfix(
             GameCamera __instance, Player player, ref Vector3 __result)
         {
-            float weight = FirstPersonShortcut.GetOffsetWeight(FirstPersonMode.Active);
+            float weight = Shortcut.GetOffsetWeight(Mode.Active);
             if (weight <= 0f || !player) return;
 
             Vector3 firstPersonOffset = player.m_eye.transform.TransformVector(
@@ -88,11 +88,11 @@ namespace Landoria.FirstPerson
 
     // Keeps movement relative to the camera without turning the body toward strafing.
     [HarmonyPatch(typeof(Player), "AlwaysRotateCamera")]
-    internal static class FirstPersonPlayerRotationPatch
+    internal static class PlayerRotationPatch
     {
         private static void Postfix(Player __instance, ref bool __result)
         {
-            if (FirstPersonMode.Active && __instance == Player.m_localPlayer)
+            if (Mode.Active && __instance == Player.m_localPlayer)
             {
                 __result = true;
             }
@@ -101,21 +101,21 @@ namespace Landoria.FirstPerson
 
     // Updates vegetation materials on objects loaded after first person activates.
     [HarmonyPatch(typeof(ZNetView), "Awake")]
-    internal static class FirstPersonLoadedObjectPatch
+    internal static class LoadedObjectPatch
     {
         private static void Postfix(ZNetView __instance)
         {
-            FirstPersonVegetationController.Apply(__instance.gameObject);
+            VegetationController.Apply(__instance.gameObject);
         }
     }
 
     // Keeps the local character active so its animations still run while hidden.
     [HarmonyPatch(typeof(Character), "SetVisible")]
-    internal static class FirstPersonPlayerVisibilityPatch
+    internal static class PlayerVisibilityPatch
     {
         private static void Prefix(Character __instance, ref bool visible)
         {
-            if (FirstPersonMode.Active && __instance == Player.m_localPlayer)
+            if (Mode.Active && __instance == Player.m_localPlayer)
             {
                 visible = true;
             }
@@ -124,7 +124,7 @@ namespace Landoria.FirstPerson
 
     // Refreshes hidden visuals and held items after equipment changes.
     [HarmonyPatch(typeof(VisEquipment), "UpdateVisuals")]
-    internal static class FirstPersonVisualVisibilityPatch
+    internal static class VisualVisibilityPatch
     {
         private static void Postfix(
             VisEquipment __instance, GameObject ___m_leftItemInstance,
@@ -133,34 +133,40 @@ namespace Landoria.FirstPerson
             Player player = __instance.GetComponentInParent<Player>();
             if (player == Player.m_localPlayer)
             {
-                FirstPersonVisibilityController.TrackHeldItems(
+                VisibilityController.TrackHeldItems(
                     player, ___m_leftItemInstance, ___m_rightItemInstance);
             }
-            if (FirstPersonMode.Active && player == Player.m_localPlayer)
+            if (Mode.Active && player == Player.m_localPlayer)
             {
-                FirstPersonHelmetLightController.Refresh(player);
+                HelmetLightController.Refresh(player);
             }
         }
     }
 
     // Repositions helmet lights after Valheim finishes its frame updates.
     [HarmonyPatch(typeof(MonoUpdaters), "LateUpdate")]
-    internal static class FirstPersonHelmetLightLateUpdatePatch
+    internal static class HelmetLightLateUpdatePatch
     {
         private static void Postfix()
         {
-            FirstPersonHelmetLightController.Apply(
+            HelmetLightController.Apply(
                 GameCamera.instance, Player.m_localPlayer);
         }
     }
 
     // Validates and saves values handled by Valheim's FOV command.
     [HarmonyPatch(typeof(Terminal.ConsoleCommand), nameof(Terminal.ConsoleCommand.RunAction))]
-    internal static class FirstPersonFieldOfViewCommandPatch
+    internal static class FieldOfViewCommandPatch
     {
         private static bool Prefix(
             Terminal.ConsoleCommand __instance, Terminal.ConsoleEventArgs args)
         {
+            if (__instance.Command == "fov" && args.Length == 1)
+            {
+                args.Context?.AddString($"FOV: {Preference.FieldOfView:0.#}");
+                return false;
+            }
+
             string value = args.Length > 1 ? args[1] : null;
             bool shouldReset = __instance.Command == "fov" && args.Length == 2 &&
                                string.Equals(value, "reset",
@@ -171,24 +177,24 @@ namespace Landoria.FirstPerson
                 bool outsideSupportedRange = __instance.Command == "fov" &&
                                              args.Length > 1 && parsed &&
                                              (requestedFieldOfView <
-                                              FirstPersonPreference.MinimumFieldOfView ||
+                                              Preference.MinimumFieldOfView ||
                                               requestedFieldOfView >
-                                              FirstPersonPreference.MaximumFieldOfView);
+                                              Preference.MaximumFieldOfView);
                 if (!outsideSupportedRange)
                 {
                     return true;
                 }
 
                 args.Context?.AddString(
-                    $"FOV must be between {FirstPersonPreference.MinimumFieldOfView} " +
-                    $"and {FirstPersonPreference.MaximumFieldOfView}. " +
+                    $"FOV must be between {Preference.MinimumFieldOfView} " +
+                    $"and {Preference.MaximumFieldOfView}. " +
                     "The current FOV was not changed.");
                 return false;
             }
 
-            float fieldOfView = FirstPersonPreference.DefaultFieldOfView;
-            FirstPersonPreference.SetFieldOfView(fieldOfView);
-            FirstPersonMode.ApplyConfiguredFieldOfView(GameCamera.instance);
+            float fieldOfView = Preference.DefaultFieldOfView;
+            Preference.SetFieldOfView(fieldOfView);
+            Mode.ApplyConfiguredFieldOfView(GameCamera.instance);
             return false;
         }
 
@@ -198,38 +204,38 @@ namespace Landoria.FirstPerson
             bool parsed = args.TryParameterFloat(1, out float fieldOfView);
             bool shouldSave = __instance.Command == "fov" && args.Length > 1 &&
                               parsed && fieldOfView >=
-                              FirstPersonPreference.MinimumFieldOfView &&
+                              Preference.MinimumFieldOfView &&
                               fieldOfView <=
-                              FirstPersonPreference.MaximumFieldOfView;
+                              Preference.MaximumFieldOfView;
             if (shouldSave)
             {
-                FirstPersonPreference.SetFieldOfView(fieldOfView);
-                FirstPersonMode.ApplyConfiguredFieldOfView(GameCamera.instance);
+                Preference.SetFieldOfView(fieldOfView);
+                Mode.ApplyConfiguredFieldOfView(GameCamera.instance);
             }
         }
     }
 
     // Restores saved first-person settings when the local player spawns.
     [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
-    internal static class FirstPersonPlayerSpawnPatch
+    internal static class PlayerSpawnPatch
     {
         private static void Postfix(Player __instance)
         {
             if (__instance == Player.m_localPlayer)
             {
-                FirstPersonMode.SetEnabled(FirstPersonPreference.Enabled);
-                FirstPersonMode.ApplyConfiguredFieldOfView(GameCamera.instance);
+                Mode.SetEnabled(Preference.Enabled);
+                Mode.ApplyConfiguredFieldOfView(GameCamera.instance);
             }
         }
     }
 
     // Restores changed state when the player leaves a game session.
     [HarmonyPatch(typeof(ZNet), "OnDestroy")]
-    internal static class FirstPersonDisconnectPatch
+    internal static class DisconnectPatch
     {
         private static void Prefix()
         {
-            FirstPersonMode.ResetSession();
+            Mode.ResetSession();
         }
     }
 }

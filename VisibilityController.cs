@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Landoria.FirstPerson
 {
     // Hides the local body while keeping held items visible in first person.
-    internal static class FirstPersonVisibilityController
+    internal static class VisibilityController
     {
         private static readonly HashSet<Renderer> HiddenRenderers =
             new HashSet<Renderer>();

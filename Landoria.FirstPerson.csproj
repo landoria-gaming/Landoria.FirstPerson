@@ -30,16 +30,17 @@
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(ValheimGamePath)\valheim_Data\Managed\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FirstPersonPatches.cs" />
-    <Compile Include="FirstPersonHeadBobController.cs" />
-    <Compile Include="FirstPersonHelmetLightController.cs" />
-    <Compile Include="FirstPersonMode.cs" />
-    <Compile Include="FirstPersonPreference.cs" />
-    <Compile Include="FirstPersonPlugin.cs" />
-    <Compile Include="FirstPersonShortcut.cs" />
-    <Compile Include="FirstPersonViewController.cs" />
-    <Compile Include="FirstPersonVegetationController.cs" />
-    <Compile Include="FirstPersonVisibilityController.cs" />
+    <Compile Include="Patches.cs" />
+    <Compile Include="ConfigWatcher.cs" />
+    <Compile Include="HeadBobController.cs" />
+    <Compile Include="HelmetLightController.cs" />
+    <Compile Include="Mode.cs" />
+    <Compile Include="Preference.cs" />
+    <Compile Include="Plugin.cs" />
+    <Compile Include="Shortcut.cs" />
+    <Compile Include="ViewController.cs" />
+    <Compile Include="VegetationController.cs" />
+    <Compile Include="VisibilityController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -48,5 +49,4 @@
     <Content Include="CHANGELOG.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="build\Thunderstore.targets" />
 </Project>
