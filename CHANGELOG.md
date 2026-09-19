@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.11
+
+- Updated README.
+
 ## 1.0.10
 
 - remove /firstperson command, replaced by F6 by default
