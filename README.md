@@ -44,10 +44,6 @@ The file `Landoria.FirstPerson.cfg` is created automatically in the config folde
 | `FieldOfView` | `65` | Saved camera FOV. Normally changed using the `fov` command in-game |
 | `FirstPersonFieldOfViewBonus` | `15` | Additional FOV applied only in first person; accepts values from 0 to 50 |
 
-## Valheim compatibility
-
-Current release: 1.0.x
-
 ## Contact
 
 Report bugs through [GitHub Issues](https://github.com/landoria-gaming/Landoria.FirstPerson/issues).
