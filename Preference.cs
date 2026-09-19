@@ -8,7 +8,7 @@ namespace Landoria.FirstPerson
         internal const float DefaultFieldOfView = 65f; // Degrees.
         internal const float MinimumFieldOfView = 65f; // Degrees.
         internal const float MaximumFieldOfView = 120f; // Degrees.
-        internal const float DefaultFirstPersonFieldOfViewBonus = 10f; // Degrees.
+        internal const float DefaultFirstPersonFieldOfViewBonus = 15f; // Degrees.
         internal const float MaximumFirstPersonFieldOfViewBonus = 50f; // Degrees.
         internal const float DefaultAutomaticReturnDelay = 3f; // Seconds.
         internal const int DefaultHeadBobStrength = 2;
