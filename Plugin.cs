@@ -18,7 +18,7 @@ namespace Landoria.FirstPerson
         {
             Logger.LogInfo($"AssemblyVersion: {GetType().Assembly.GetName().Version}.");
             _harmony = new Harmony(PluginGuid);
-            RegisterPatches();
+            _harmony.PatchAll();
             Preference.Initialize(Config);
             ConfigWatcher.Initialize(
                 Config,
@@ -37,22 +37,6 @@ namespace Landoria.FirstPerson
         private void Update()
         {
             ConfigWatcher.Update();
-        }
-
-        private void RegisterPatches()
-        {
-            _harmony.CreateClassProcessor(typeof(CameraAwakePatch)).Patch();
-            _harmony.CreateClassProcessor(typeof(CameraUpdatePatch)).Patch();
-            _harmony.CreateClassProcessor(typeof(TemporaryDistancePatch)).Patch();
-            _harmony.CreateClassProcessor(typeof(CameraOffsetPatch)).Patch();
-            _harmony.CreateClassProcessor(typeof(PlayerRotationPatch)).Patch();
-            _harmony.CreateClassProcessor(typeof(LoadedObjectPatch)).Patch();
-            _harmony.CreateClassProcessor(typeof(PlayerVisibilityPatch)).Patch();
-            _harmony.CreateClassProcessor(typeof(VisualVisibilityPatch)).Patch();
-            _harmony.CreateClassProcessor(typeof(HelmetLightLateUpdatePatch)).Patch();
-            _harmony.CreateClassProcessor(typeof(FieldOfViewCommandPatch)).Patch();
-            _harmony.CreateClassProcessor(typeof(PlayerSpawnPatch)).Patch();
-            _harmony.CreateClassProcessor(typeof(DisconnectPatch)).Patch();
         }
 
         private void OnDestroy()
