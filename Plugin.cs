@@ -1,5 +1,6 @@
 using BepInEx;
 using HarmonyLib;
+using Landoria.Shared;
 
 namespace Landoria.FirstPerson
 {
@@ -19,7 +20,16 @@ namespace Landoria.FirstPerson
             _harmony = new Harmony(PluginGuid);
             RegisterPatches();
             Preference.Initialize(Config);
-            ConfigWatcher.Initialize(Config, Logger);
+            ConfigWatcher.Initialize(
+                Config,
+                Logger,
+                "First Person",
+                () => Preference.RestoreDefaults(Config),
+                () =>
+                {
+                    Mode.SetEnabled(Preference.Enabled);
+                    Mode.ApplyConfiguredFieldOfView(GameCamera.instance);
+                });
             Logger.LogInfo($"{PluginName} {PluginVersion} is loaded.");
         }
 

@@ -31,7 +31,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Patches.cs" />
-    <Compile Include="ConfigWatcher.cs" />
     <Compile Include="HeadBobController.cs" />
     <Compile Include="HelmetLightController.cs" />
     <Compile Include="Mode.cs" />
@@ -48,5 +47,6 @@
     <Content Include="README.md" />
     <Content Include="CHANGELOG.md" />
   </ItemGroup>
+  <Import Project="..\Landoria.CodeSnippets\Landoria.CodeSnippets.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

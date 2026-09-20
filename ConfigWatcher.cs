@@ -4,7 +4,7 @@ using System.Threading;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 
-namespace Landoria.FirstPerson
+namespace Landoria.Shared
 {
     // Reloads the mod configuration after its file changes on disk.
     internal static class ConfigWatcher
@@ -20,13 +20,24 @@ namespace Landoria.FirstPerson
         private static int reloadPending;
         private static int reloadAttempts;
         private static long ignoredWriteTicks;
+        private static string displayName;
+        private static Action restoreDefaults;
+        private static Action applyConfiguration;
 
         // Starts watching the active configuration file.
-        internal static void Initialize(ConfigFile configFile, ManualLogSource logSource)
+        internal static void Initialize(
+            ConfigFile configFile,
+            ManualLogSource logSource,
+            string configurationDisplayName,
+            Action restoreDefaultsAction,
+            Action applyConfigurationAction = null)
         {
             Dispose();
             config = configFile;
             logger = logSource;
+            displayName = configurationDisplayName;
+            restoreDefaults = restoreDefaultsAction;
+            applyConfiguration = applyConfigurationAction;
             configPath = Path.GetFullPath(config.ConfigFilePath);
             watcher = new FileSystemWatcher(
                 Path.GetDirectoryName(configPath), Path.GetFileName(configPath));
@@ -73,14 +84,14 @@ namespace Landoria.FirstPerson
                 bool recreated = !File.Exists(configPath);
                 if (recreated)
                 {
-                    Preference.RestoreDefaults(config);
+                    restoreDefaults?.Invoke();
                 }
                 else
                 {
                     config.Reload();
                 }
 
-                ApplyConfiguration();
+                applyConfiguration?.Invoke();
                 reloadAttempts = 0;
                 logger.LogInfo(recreated
                     ? "Recreated the deleted configuration with default values."
@@ -106,6 +117,9 @@ namespace Landoria.FirstPerson
             Interlocked.Exchange(ref reloadPending, 0);
             Interlocked.Exchange(ref ignoredWriteTicks, 0);
             reloadAttempts = 0;
+            displayName = null;
+            restoreDefaults = null;
+            applyConfiguration = null;
         }
 
         // Records a normal file-system change for the main thread.
@@ -170,21 +184,15 @@ namespace Landoria.FirstPerson
             }
         }
 
-        // Applies reloaded values to the active camera state.
-        private static void ApplyConfiguration()
-        {
-            Mode.SetEnabled(Preference.Enabled);
-            Mode.ApplyConfiguredFieldOfView(GameCamera.instance);
-        }
-
         // Notifies the local player that the new settings are active.
         private static void ShowReloadMessage(bool recreated)
         {
             Player.m_localPlayer?.Message(
                 MessageHud.MessageType.TopLeft,
                 recreated
-                    ? "First Person configuration restored to defaults."
-                    : "First Person configuration reloaded.");
+                    ? $"{displayName} configuration restored to defaults."
+                    : $"{displayName} configuration reloaded.");
         }
+
     }
 }

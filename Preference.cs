@@ -1,4 +1,5 @@
 using BepInEx.Configuration;
+using Landoria.Shared;
 
 namespace Landoria.FirstPerson
 {
