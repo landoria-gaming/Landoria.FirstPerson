@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.13
+
+- Use latest BepInEx version 5.4.2351
+
 ## 1.0.12
 
 - Added a configurable first-person FOV bonus (+15 by default)
