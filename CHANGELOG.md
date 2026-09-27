@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.14
+
+- disabled automatic third person on action; can be enabled with Alt+F6 by default.
+
 ## 1.0.13
 
 - Use latest BepInEx version 5.4.2351

@@ -11,15 +11,18 @@ namespace Landoria.FirstPerson
         internal const float MaximumFieldOfView = 120f; // Degrees.
         internal const float DefaultFirstPersonFieldOfViewBonus = 15f; // Degrees.
         internal const float MaximumFirstPersonFieldOfViewBonus = 50f; // Degrees.
-        internal const float DefaultAutomaticReturnDelay = 3f; // Seconds.
+        internal const int DefaultThirdPersonAutoDistance = 3; // Meters.
+        internal const int DefaultAutomaticReturnDelay = 3; // Seconds.
         internal const int DefaultHeadBobStrength = 2;
 
         private static ConfigEntry<bool> enabled;
         private static ConfigEntry<float> fieldOfView;
         private static ConfigEntry<float> firstPersonFieldOfViewBonus;
         private static ConfigEntry<KeyboardShortcut> toggleShortcut;
-        private static ConfigEntry<float> automaticReturnDelay;
-        private static ConfigEntry<bool> smoothAutomaticTransitions;
+        private static ConfigEntry<KeyboardShortcut> toggleThirdPersonAutoShortcut;
+        private static ConfigEntry<bool> thirdPersonAuto;
+        private static ConfigEntry<int> thirdPersonAutoDistance;
+        private static ConfigEntry<int> automaticReturnDelay;
         private static ConfigEntry<int> headBobStrength;
 
         internal static bool Enabled => enabled.Value;
@@ -27,8 +30,12 @@ namespace Landoria.FirstPerson
         internal static float FirstPersonFieldOfViewBonus =>
             firstPersonFieldOfViewBonus.Value;
         internal static KeyboardShortcut ToggleShortcut => toggleShortcut.Value;
-        internal static float AutomaticReturnDelay => automaticReturnDelay.Value;
-        internal static bool SmoothAutomaticTransitions => smoothAutomaticTransitions.Value;
+        internal static KeyboardShortcut ToggleThirdPersonAutoShortcut =>
+            toggleThirdPersonAutoShortcut.Value;
+        internal static bool ThirdPersonAuto => thirdPersonAuto.Value;
+        internal static int ThirdPersonAutoDistance =>
+            thirdPersonAutoDistance.Value;
+        internal static int AutomaticReturnDelay => automaticReturnDelay.Value;
         internal static int HeadBobStrength => headBobStrength.Value;
 
         // Creates the saved configuration entries used by the mod.
@@ -44,29 +51,42 @@ namespace Landoria.FirstPerson
                     new AcceptableValueRange<float>(
                         MinimumFieldOfView, MaximumFieldOfView)));
             firstPersonFieldOfViewBonus = config.Bind(
-                "Camera", "FirstPersonFieldOfViewBonus",
+                "First Person", "FirstPersonFieldOfViewBonus",
                 DefaultFirstPersonFieldOfViewBonus,
                 new ConfigDescription(
                     "Additional field of view applied only in first person.",
                     new AcceptableValueRange<float>(
                         0f, MaximumFirstPersonFieldOfViewBonus)));
             toggleShortcut = config.Bind(
-                "Controls", "ToggleShortcut",
+                "First Person", "ToggleShortcut",
                 new KeyboardShortcut(UnityEngine.KeyCode.F6),
                 "Shortcut used to enable or disable automatic first-person view.\n" +
                 "\nExamples: Mouse2 for the middle mouse button.\n" +
                 "\nMouse3/Mouse4 for the Forward/Back side button.\n" +
                 "\nSpace + LeftControl for Left Ctrl + Space.\n" +
                 "\nhttps://docs.unity3d.com/ScriptReference/KeyCode.html");
+            toggleThirdPersonAutoShortcut = config.Bind(
+                "Third Person - Auto", "ToggleThirdPersonAutoShortcut",
+                new KeyboardShortcut(
+                    UnityEngine.KeyCode.F6, UnityEngine.KeyCode.LeftAlt),
+                "Shortcut used to enable or disable third person during actions.");
+            thirdPersonAuto = config.Bind(
+                "Third Person - Auto", "ThirdPersonAuto", false,
+                "Whether actions such as attacking, blocking, chopping, mining, or building temporarily move the camera to third person.");
+            thirdPersonAutoDistance = config.Bind(
+                "Third Person - Auto", "ThirdPersonAutoDistance",
+                DefaultThirdPersonAutoDistance,
+                new ConfigDescription(
+                    "Camera distance in meters while attacking or blocking.",
+                    new AcceptableValueRange<int>(1, 10)));
             automaticReturnDelay = config.Bind(
-                "Transitions", "AutomaticReturnDelay", DefaultAutomaticReturnDelay,
-                "Seconds to remain in third person after combat or manual zoom. " +
-                "Set to 0 to disable temporary third person.");
-            smoothAutomaticTransitions = config.Bind(
-                "Transitions", "SmoothAutomaticTransitions", false,
-                "Whether automatic combat and zoom return transitions are smooth instead of instant.");
+                "Third Person - Auto", "AutomaticReturnDelay",
+                DefaultAutomaticReturnDelay,
+                new ConfigDescription(
+                    "Delay in seconds before returning to first person after an action.",
+                    new AcceptableValueRange<int>(1, 10)));
             headBobStrength = config.Bind(
-                "Camera", "HeadBobStrength", DefaultHeadBobStrength,
+                "First Person", "HeadBobStrength", DefaultHeadBobStrength,
                 new ConfigDescription(
                     "First-person head bob strength. Set to 0 to disable head bob.",
                     new AcceptableValueRange<int>(0, 3)));
@@ -77,6 +97,13 @@ namespace Landoria.FirstPerson
         internal static void SetEnabled(bool value)
         {
             enabled.Value = value;
+            ConfigWatcher.IgnoreCurrentFileVersion();
+        }
+
+        // Saves whether actions temporarily use third person.
+        internal static void SetThirdPersonAuto(bool value)
+        {
+            thirdPersonAuto.Value = value;
             ConfigWatcher.IgnoreCurrentFileVersion();
         }
 
@@ -101,8 +128,12 @@ namespace Landoria.FirstPerson
                 firstPersonFieldOfViewBonus.Value =
                     DefaultFirstPersonFieldOfViewBonus;
                 toggleShortcut.Value = new KeyboardShortcut(UnityEngine.KeyCode.F6);
+                toggleThirdPersonAutoShortcut.Value = new KeyboardShortcut(
+                    UnityEngine.KeyCode.F6, UnityEngine.KeyCode.LeftAlt);
+                thirdPersonAuto.Value = false;
+                thirdPersonAutoDistance.Value =
+                    DefaultThirdPersonAutoDistance;
                 automaticReturnDelay.Value = DefaultAutomaticReturnDelay;
-                smoothAutomaticTransitions.Value = false;
                 headBobStrength.Value = DefaultHeadBobStrength;
             }
             finally

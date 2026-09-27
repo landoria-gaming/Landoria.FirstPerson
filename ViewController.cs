@@ -7,8 +7,7 @@ namespace Landoria.FirstPerson
     {
         private const float BackwardOffset = 0.4f; // Meters.
         // Aligns the player with the camera while keeping Valheim's camera position.
-        internal static void Apply(
-            GameCamera camera, Player player, float offsetWeight, bool alignPlayer)
+        internal static void Apply(GameCamera camera, Player player)
         {
             if (!camera || !player || player.IsAttached() || player.InCutscene())
             {
@@ -18,7 +17,7 @@ namespace Landoria.FirstPerson
             Quaternion cameraRotation = camera.transform.rotation;
             Vector3 lookDirection = camera.transform.forward;
             Vector3 bodyDirection = Vector3.ProjectOnPlane(lookDirection, Vector3.up);
-            if (alignPlayer && !Menu.IsVisible() &&
+            if (!Menu.IsVisible() &&
                 bodyDirection.sqrMagnitude > Mathf.Epsilon)
             {
                 player.SetLookDir(lookDirection);
@@ -26,9 +25,7 @@ namespace Landoria.FirstPerson
             }
 
             // Preserve Valheim's smoothed base position, then apply view offsets.
-            camera.transform.position -= lookDirection *
-                                         BackwardOffset *
-                                         offsetWeight;
+            camera.transform.position -= lookDirection * BackwardOffset;
             camera.transform.rotation = cameraRotation;
         }
     }

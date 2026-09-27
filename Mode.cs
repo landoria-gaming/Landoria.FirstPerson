@@ -37,7 +37,6 @@ namespace Landoria.FirstPerson
             if (!enabled)
             {
                 SetActive(false);
-                Shortcut.CancelTransition();
             }
             Apply(GameCamera.instance);
             ApplyConfiguredFieldOfView(GameCamera.instance);
@@ -75,20 +74,6 @@ namespace Landoria.FirstPerson
             return cameraDistance <= DistanceThreshold;
         }
 
-        internal static float GetMinimumThirdPersonDistance()
-        {
-            return vanillaMinimumDistance;
-        }
-
-        // Applies a field of view to the active game camera.
-        internal static void SetFieldOfView(GameCamera camera, float fieldOfView)
-        {
-            if (camera)
-            {
-                camera.m_fov = fieldOfView;
-            }
-        }
-
         // Applies the saved field of view to every camera mode.
         internal static void ApplyConfiguredFieldOfView(GameCamera camera)
         {
@@ -98,7 +83,10 @@ namespace Landoria.FirstPerson
                 fieldOfView += Preference.FirstPersonFieldOfViewBonus;
             }
 
-            SetFieldOfView(camera, fieldOfView);
+            if (camera)
+            {
+                camera.m_fov = fieldOfView;
+            }
         }
 
         // Reduces nearby geometry clipping while first person is active.

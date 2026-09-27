@@ -8,9 +8,9 @@ Enjoy a smooth first-person view that follows where you look.
 
 ## Highlights
 
-- Toggle between first and third person camera with the default F6 key.
+- Enable first-person zoom with the default F6 key.
 - F6 can be changed to another key or mouse button in the BepInEx config file.
-- Automatically switch to third person during combat or manual camera zoom.
+- Use Left Alt + F6 to toggle third person while attacking, blocking, chopping, mining, or building.
 - Customize your field of view (FOV) in-game from 65 to 120.
 - Add a separate first-person FOV bonus, set to 15 by default.
 - Apply configuration changes without restarting the game.
@@ -20,7 +20,8 @@ Enjoy a smooth first-person view that follows where you look.
 
 | Control | Action |
 |---|---|
-| `F6` | Enable or disable first-person view |
+| `F6` | Enable or disable first-person zoom without changing the current distance |
+| `Left Alt + F6` | Enable or disable third person during actions |
 
 ## Commands
 
@@ -37,12 +38,14 @@ The file `Landoria.FirstPerson.cfg` is created automatically in the config folde
 | Setting | Default | Description |
 |---|---|---|
 | `ToggleShortcut` | `F6` | First-person toggle shortcut. May be changed to `Mouse2` or `Mouse3` for example |
-| `AutomaticReturnDelay` | `3` | Return delay in seconds after combat or manual camera zoom; `0` disables temporary third person |
-| `SmoothAutomaticTransitions` | `false` | Use smooth automatic transitions instead of instant camera changes |
 | `HeadBobStrength` | `2` | First-person head bob strength; `0` disables it |
 | `FirstPersonEnabled` | `false` | Saved first-person state. Normally changed using F6. |
 | `FieldOfView` | `65` | Saved camera FOV. Normally changed using the `fov` command in-game |
 | `FirstPersonFieldOfViewBonus` | `15` | Additional FOV applied only in first person; accepts values from 0 to 50 |
+| `ThirdPersonAuto` | `false` | Use third person during actions such as attacking, blocking, chopping, mining, or building |
+| `ToggleThirdPersonAutoShortcut` | `Left Alt + F6` | Toggle automatic third person during actions |
+| `ThirdPersonAutoDistance` | `3` | Camera distance during an action; accepts 1 to 10 meters |
+| `AutomaticReturnDelay` | `3` | Return delay from 1 to 10 seconds; zoom in returns immediately, zoom out cancels it |
 
 ## Contact
 

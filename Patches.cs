@@ -22,16 +22,16 @@ namespace Landoria.FirstPerson
     [HarmonyPatch(typeof(GameCamera), "UpdateCamera")]
     internal static class CameraUpdatePatch
     {
-        private static void Prefix(
-            GameCamera __instance, float dt, ref float ___m_distance)
+        private static void Prefix(ref float ___m_distance)
         {
-            Shortcut.Update(__instance, dt, ref ___m_distance);
+            Shortcut.Update(ref ___m_distance);
             Shortcut.PrepareDistanceObservation(___m_distance);
         }
 
         private static void Postfix(
-            GameCamera __instance, Camera ___m_camera, float ___m_distance)
+            GameCamera __instance, Camera ___m_camera, ref float ___m_distance)
         {
+            Shortcut.ObserveCameraDistance(ref ___m_distance);
             Player player = Player.m_localPlayer;
             bool shouldApply = Mode.ShouldActivate(
                 player, GameCamera.InFreeFly(), ___m_distance);
@@ -39,11 +39,9 @@ namespace Landoria.FirstPerson
             Mode.ApplyConfiguredFieldOfView(__instance);
             Mode.ApplyNearClipPlane(___m_camera);
             VisibilityController.SetHidden(player, shouldApply);
-            float offsetWeight = Shortcut.GetOffsetWeight(shouldApply);
-            if (offsetWeight > 0f)
+            if (shouldApply)
             {
-                ViewController.Apply(
-                    __instance, player, offsetWeight, shouldApply);
+                ViewController.Apply(__instance, player);
             }
             if (shouldApply)
             {
@@ -58,31 +56,18 @@ namespace Landoria.FirstPerson
         }
     }
 
-    // Handles native zoom before Valheim calculates the final camera position.
-    [HarmonyPatch(typeof(GameCamera), "GetCameraPosition")]
-    internal static class TemporaryDistancePatch
-    {
-        private static void Prefix(GameCamera __instance, ref float ___m_distance)
-        {
-            Shortcut.ObserveCameraDistance(
-                __instance, ref ___m_distance);
-            Shortcut.KeepTemporaryThirdPerson(ref ___m_distance);
-        }
-    }
-
-    // Blends Valheim's third-person camera offset into its first-person offset.
+    // Applies Valheim's first-person camera offset.
     [HarmonyPatch(typeof(GameCamera), "GetCameraOffset")]
     internal static class CameraOffsetPatch
     {
         private static void Postfix(
             GameCamera __instance, Player player, ref Vector3 __result)
         {
-            float weight = Shortcut.GetOffsetWeight(Mode.Active);
-            if (weight <= 0f || !player) return;
+            if (!Mode.Active || !player) return;
 
             Vector3 firstPersonOffset = player.m_eye.transform.TransformVector(
                 __instance.m_fpsOffset);
-            __result = Vector3.Lerp(__result, firstPersonOffset, weight);
+            __result = firstPersonOffset;
         }
     }
 
