@@ -10,7 +10,7 @@ Enjoy a smooth first-person view that follows where you look.
 
 - Enable first-person zoom with the default F6 key.
 - F6 can be changed to another key or mouse button in the BepInEx config file.
-- Use Left Alt + F6 to toggle third person while attacking, blocking, chopping, mining, or building.
+- Use Left Alt + F6 to toggle third person while attacking, blocking, chopping, mining, or building; returns to first person after 3 seconds by default.
 - Customize your field of view (FOV) in-game from 65 to 120.
 - Add a separate first-person FOV bonus, set to 15 by default.
 - Apply configuration changes without restarting the game.
@@ -21,7 +21,7 @@ Enjoy a smooth first-person view that follows where you look.
 | Control | Action |
 |---|---|
 | `F6` | Enable or disable first-person zoom without changing the current distance |
-| `Left Alt + F6` | Enable or disable third person during actions |
+| `Left Alt + F6` | Enable or disable automatic third person during actions |
 
 ## Commands
 
@@ -45,7 +45,7 @@ The file `Landoria.FirstPerson.cfg` is created automatically in the config folde
 | `ThirdPersonAuto` | `false` | Use third person during actions such as attacking, blocking, chopping, mining, or building |
 | `ToggleThirdPersonAutoShortcut` | `Left Alt + F6` | Toggle automatic third person during actions |
 | `ThirdPersonAutoDistance` | `3` | Camera distance during an action; accepts 1 to 10 meters |
-| `AutomaticReturnDelay` | `3` | Return delay from 1 to 10 seconds; zoom in returns immediately, zoom out cancels it |
+| `AutomaticReturnDelay` | `3` | ThirdPersonAuto return delay from 1 to 10 seconds; zoom in returns immediately, zoom out cancels it |
 
 ## Contact
 

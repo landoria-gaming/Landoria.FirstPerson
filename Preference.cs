@@ -69,7 +69,7 @@ namespace Landoria.FirstPerson
                 "Third Person - Auto", "ToggleThirdPersonAutoShortcut",
                 new KeyboardShortcut(
                     UnityEngine.KeyCode.F6, UnityEngine.KeyCode.LeftAlt),
-                "Shortcut used to enable or disable third person during actions.");
+                "Shortcut used to enable or disable automatic third person during actions.");
             thirdPersonAuto = config.Bind(
                 "Third Person - Auto", "ThirdPersonAuto", false,
                 "Whether actions such as attacking, blocking, chopping, mining, or building temporarily move the camera to third person.");
@@ -83,7 +83,7 @@ namespace Landoria.FirstPerson
                 "Third Person - Auto", "AutomaticReturnDelay",
                 DefaultAutomaticReturnDelay,
                 new ConfigDescription(
-                    "Delay in seconds before returning to first person after an action.",
+                    "ThirdPersonAuto delay before returning to first person after an action.",
                     new AcceptableValueRange<int>(1, 10)));
             headBobStrength = config.Bind(
                 "First Person", "HeadBobStrength", DefaultHeadBobStrength,
