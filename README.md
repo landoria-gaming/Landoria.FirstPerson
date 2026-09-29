@@ -5,7 +5,7 @@ Enjoy a smooth first-person view that follows where you look.
 ## Video demo
 
 <p align="left">
-  <a href="https://youtu.be/B66x3Gc5Vbw?t=36"><img src="https://raw.githubusercontent.com/landoria-gaming/Landoria.FirstPerson/main/assets/first-person.jpg" alt="First Person video demo" width="300"></a>
+  <a href="https://youtu.be/B66x3Gc5Vbw"><img src="https://raw.githubusercontent.com/landoria-gaming/Landoria.FirstPerson/main/assets/first-person.jpg" alt="First Person video demo" width="300"></a>
 </p>
 
 ## Highlights
