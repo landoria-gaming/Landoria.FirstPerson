@@ -4,7 +4,9 @@ Enjoy a smooth first-person view that follows where you look.
 
 ## Video demo
 
-[Watch First Person in action on YouTube](https://youtu.be/B66x3Gc5Vbw).
+<p align="left">
+  <a href="https://youtu.be/B66x3Gc5Vbw?t=36"><img src="assets/first-person.jpg" alt="First Person video demo" style="width: 100%; max-width: 300px;"></a>
+</p>
 
 ## Highlights
 
