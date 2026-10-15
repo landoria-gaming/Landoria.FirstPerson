@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.15
+
+- Updated readme
+
 ## 1.0.14
 
 - disabled automatic third person on action; can be enabled with Alt+F6 by default.

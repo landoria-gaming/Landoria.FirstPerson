@@ -1,6 +1,6 @@
 {
   "name": "FirstPerson",
-  "version_number": "1.0.14",
+  "version_number": "1.0.15",
   "website_url": "https://github.com/landoria-gaming/Landoria.FirstPerson",
   "description": "Enjoy a smooth first-person view that follows where you look.",
   "dependencies": [
