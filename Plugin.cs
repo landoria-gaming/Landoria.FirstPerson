@@ -10,7 +10,7 @@ namespace Landoria.FirstPerson
     {
         private const string PluginGuid = "Landoria.FirstPerson";
         private const string PluginName = "Landoria.FirstPerson";
-        private const string PluginVersion = "1.0.15";
+        private const string PluginVersion = "1.0.16";
 
         private Harmony _harmony;
 

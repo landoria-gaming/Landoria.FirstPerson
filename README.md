@@ -14,7 +14,7 @@ Enjoy a smooth first-person view that follows where you look.
 
 ## Preview
 
-<img src="assets/first-person.gif" alt="First Person gameplay" width="320">
+<img src="https://raw.githubusercontent.com/landoria-gaming/Landoria.FirstPerson/refs/heads/main/assets/first-person.gif" alt="First Person gameplay" width="320">
 
 ## Controls
 
