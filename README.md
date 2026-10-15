@@ -2,12 +2,6 @@
 
 Enjoy a smooth first-person view that follows where you look.
 
-## Video demo
-
-<p align="left">
-  <a href="https://youtu.be/B66x3Gc5Vbw"><img src="https://raw.githubusercontent.com/landoria-gaming/Landoria.FirstPerson/main/assets/first-person.png" alt="First Person video demo" width="300"></a>
-</p>
-
 ## Highlights
 
 - Enable first-person zoom with the default F6 key.
@@ -17,6 +11,10 @@ Enjoy a smooth first-person view that follows where you look.
 - Add a separate first-person FOV bonus, set to 15 by default.
 - Apply configuration changes without restarting the game.
 - Client-side mod; no server installation needed.
+
+## Preview
+
+<img src="assets/first-person.gif" alt="First Person gameplay" width="320">
 
 ## Controls
 
